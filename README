@@ -1,0 +1,23 @@
+After looking around for a light weight editable grid for Rails for a while, I
+decided to create one for myself. 
+
+This is the first cut - 
+
+One can use the grid from a view as follows 
+
+
+<%= grid( :model => @students %> 
+
+And it would generate a table with the some JS that allows arrow key based
+navigation.  And asynchronous update using Ajax!
+
+The idea is to add support as follows - 
+
+<% grid( :model => @students, 
+   :update_controller => "students_controller",
+   :update_action => "update"
+%>
+
+Also, ability for multiuser update and asynchronous updates to the table as other
+users make changes!
+

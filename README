@@ -13,7 +13,7 @@ navigation.  And asynchronous update using Ajax!
 
 The idea is to add support as follows - 
 
-<% grid( :model => @students, 
+<%= grid( :model => @students, 
    :update_controller => "students_controller",
    :update_action => "update"
 %>

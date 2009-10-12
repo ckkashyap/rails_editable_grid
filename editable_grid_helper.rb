@@ -1,6 +1,18 @@
 module WorkElementsHelper
+        def random_string(size)
+            alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            alphabetMaxIndex=alphabet.size-1
+            str = ""
+            1.upto(size) do |i|
+                str << alphabet[rand(alphabetMaxIndex)]
+            end
+            str
+        end
+
 	def grid(options)
 		return if options[:model].nil?
+
+		random_prefix=random_string(4)
 
 		model=options[:model]
 		ignore_list=['id','created_at','updated_at']
@@ -24,10 +36,10 @@ module WorkElementsHelper
 				table << <<-END_OF_HTML
 <td>
 	<input 
-		id="#{c.name}#{r}" 
+		id="#{random_prefix}#{c.name}#{r}" 
 		style="border:none;"
 		type="text"
-		onkeydown="_handle_keyboard(event,#{id},'#{c.name}',#{r},#{rows})"
+		onkeydown="_handle_keyboard(event,this,#{id},'#{c.name}',#{r},#{rows})"
 		onfocus="store_original_value(this)"
 		onBlur="update_if_required(this,#{id},'#{c.name}')"
 		value='#{value}'>
@@ -40,12 +52,11 @@ module WorkElementsHelper
 		table << "</table>"
 		table << <<-END_OF_SCRIPT
 <script language="JavaScript">
-var _original_value;
-var _original_node;
-function _handle_keyboard(e,id,column,r,max_r){
+var #{random_prefix}original_value;
+var #{random_prefix}original_node;
+function _handle_keyboard(e,node,id,column,r,max_r){
 	var code=e.keyCode;
 	var old_r=r;
-	var id="";
 	if(code==40){ //down
 		r=r+1;
 		if(r>max_r)r=1;
@@ -57,27 +68,36 @@ function _handle_keyboard(e,id,column,r,max_r){
 	if(code==27){ //escape
 		setTimeout(restore_original_value,0);
 	}
+	if(code==13){
+		update_if_required(node,id,column);
+		#{random_prefix}original_value=node.value;
+		return;
+	}
 
 	if(old_r!=r){
-		id=column+""+r;
+		var id="#{random_prefix}"+column+r;
 		var element=document.getElementById(id);
 		if(element!=null)element.focus();
 	}
 }
 function restore_original_value(){
-	_original_node.value=_original_value;
+	#{random_prefix}original_node.value=#{random_prefix}original_value;
 
 }
 function store_original_value(node){
-	_original_value=node.value;
-	_original_node=node;
+	#{random_prefix}original_value=node.value;
+	#{random_prefix}original_node=node;
 }
 function update_if_required(node,id,col_name){
-	if(node.value==_original_value) return;
+	if(node.value==#{random_prefix}original_value) return;
+	var parameter="";
+	parameter+="&column_name=" + encodeURIComponent(col_name);
+	parameter+="&column_value=" + encodeURIComponent(node.value);
+	
 	new Ajax.Updater(
-			'inbox_status', 
-			'/work_elements/dingo/'+id, 
-			{asynchronous:true, evalScripts:true, parameters:'authenticity_token=' + encodeURIComponent('Hl7TS7DG2dM0zmGAO09HMU8rKTNJwto37APahAPK9vA=')}
+			'#{options[:update_html_id]}', 
+			'#{options[:update_url]}'+id, 
+			{asynchronous:true, evalScripts:true, parameters:'authenticity_token=' + encodeURIComponent('Hl7TS7DG2dM0zmGAO09HMU8rKTNJwto37APahAPK9vA=') + parameter}
 			)
 }
 </script>

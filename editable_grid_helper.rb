@@ -1,4 +1,4 @@
-module WorkElementsHelper
+module EditableGridHelper
         def random_string(size)
             alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
             alphabetMaxIndex=alphabet.size-1
@@ -20,7 +20,7 @@ module WorkElementsHelper
 		model_class=model[0].class
 		cols=model_class.columns.length
 		rows=model.length
-		table='<table border="1" cellpadding="0">'
+		table='<table border="0" cellspacing="0" cellpadding="0">'
 		table << "<tr>"
 		model_class.columns.each do |c|
 			next if ignore_list.index c.name
@@ -37,7 +37,6 @@ module WorkElementsHelper
 <td>
 	<input 
 		id="#{random_prefix}#{c.name}#{r}" 
-		style="border:none;"
 		type="text"
 		onkeydown="_handle_keyboard(event,this,#{id},'#{c.name}',#{r},#{rows})"
 		onfocus="store_original_value(this)"
@@ -104,6 +103,4 @@ function update_if_required(node,id,col_name){
 		END_OF_SCRIPT
 	end
 end
-
-#<a href="#" onclick="new Ajax.Updater('inbox_status', '/work_elements/dingo', {asynchronous:true, evalScripts:true, parameters:'authenticity_token=' + encodeURIComponent('Hl7TS7DG2dM0zmGAO09HMU8rKTNJwto37APahAPK9vA=')}); return false;">Check status...</a>
 

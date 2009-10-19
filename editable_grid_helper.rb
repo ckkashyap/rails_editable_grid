@@ -15,17 +15,28 @@ module EditableGridHelper
 		random_prefix=random_string(4)
 
 		model=options[:model]
+		table_name=model[0].class.send "table_name"
 		ignore_list=['id','created_at','updated_at']
 		ignore_list<<options[:ignore_list] unless options[:ignore_list]
 		model_class=model[0].class
 		cols=model_class.columns.length
 		rows=model.length
-		table='<table border="0" cellspacing="0" cellpadding="0">'
+		table='<table border="1" cellspacing="0" cellpadding="5">'
 		table << "<tr>"
 		model_class.columns.each do |c|
 			next if ignore_list.index c.name
 			table << "<th>#{c.name}</th>"
 		end
+		
+		remote_form_for(model[0]) do |form|
+			concat(form.text_field(:name,:style=>"border:none;border-color:red;padding:0"))
+			concat(submit_tag)
+		end
+		remote_form_for(model[1]) do |form|
+			concat(form.text_field(:name))
+			concat(submit_tag)
+		end
+
 		table << "</tr>"
 		1.upto rows do |r|
 			table << "<tr>"
@@ -38,6 +49,7 @@ module EditableGridHelper
 	<input 
 		id="#{random_prefix}#{c.name}#{r}" 
 		type="text"
+		style="border-color:#eee;border:none;padding:15;margin-top:10"
 		onkeydown="_handle_keyboard(event,this,#{id},'#{c.name}',#{r},#{rows})"
 		onfocus="store_original_value(this)"
 		onBlur="update_if_required(this,#{id},'#{c.name}')"
@@ -50,7 +62,14 @@ module EditableGridHelper
 		end
 		table << "</table>"
 		table << <<-END_OF_SCRIPT
+
+	
+
 <script language="JavaScript">
+function dingo(o){
+	//o.value=encodeURIComponent('Hl7TS7DG2dM0zmGAO09HMU8rKTNJwto37APahAPK9vA=');
+	o.value='Hl7TS7DG2dM0zmGAO09HMU8rKTNJwto37APahAPK9vA=';
+}
 var #{random_prefix}original_value;
 var #{random_prefix}original_node;
 function _handle_keyboard(e,node,id,column,r,max_r){
@@ -89,18 +108,41 @@ function store_original_value(node){
 }
 function update_if_required(node,id,col_name){
 	if(node.value==#{random_prefix}original_value) return;
-	var parameter="";
-	parameter+="&column_name=" + encodeURIComponent(col_name);
-	parameter+="&column_value=" + encodeURIComponent(node.value);
-	
+	//var parameter="";
+	//parameter+="&column_name=" + encodeURIComponent(col_name);
+	//parameter+="&column_value=" + encodeURIComponent(node.value);
+	//parameter+="&#{table_name.singularize}={\\""+encodeURIComponent(col_name) + " => "+ '"' + encodeURIComponent(node.value) + '"' + "}";
+
+	var another={name:10};
+
+	var parameter = {};
+	var another={};
+
+	parameter['authenticity_token']=encodeURIComponent('Hl7TS7DG2dM0zmGAO09HMU8rKTNJwto37APahAPK9vA=');
+
+	another[col_name]=node.value;
+	parameter["#{table_name.singularize}"]=another;
+
+	alert(parameter);
+
+
 	new Ajax.Updater(
 			'#{options[:update_html_id]}', 
 			'#{options[:update_url]}'+id, 
-			{asynchronous:true, evalScripts:true, parameters:'authenticity_token=' + encodeURIComponent('Hl7TS7DG2dM0zmGAO09HMU8rKTNJwto37APahAPK9vA=') + parameter}
-			)
+				{
+					asynchronous:true,
+					evalScripts:true, 
+					parameters: {
+					'authenticity_token': encodeURIComponent('Hl7TS7DG2dM0zmGAO09HMU8rKTNJwto37APahAPK9vA='),
+					hello: another
+					}
+				}
+			);
 }
 </script>
 		END_OF_SCRIPT
+
+
 	end
 end
 
